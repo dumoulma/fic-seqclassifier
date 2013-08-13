@@ -19,10 +19,10 @@
 	</property>
 	<property>
 		<name>data.train.path</name>
-		<value>data/corpus6/train/corpus-sequences</value>
+		<value>data/out/bns-seq/train/bns-corpus.seq</value>
 	</property>
 	<property>
 		<name>data.test.path</name>
-		<value>data/corpus6/test/corpus-sequences</value>
+		<value>data/out/bns-seq/test/bns-corpus.seq</value>
 	</property>
 </configuration>

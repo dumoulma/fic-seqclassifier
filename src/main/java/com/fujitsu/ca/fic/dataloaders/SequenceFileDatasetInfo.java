@@ -19,12 +19,19 @@ public class SequenceFileDatasetInfo {
         try {
             int featureCount = 0;
             FileSystem fs = FileSystem.get(conf);
-            try (SequenceFile.Reader reader = new SequenceFile.Reader(fs, new Path(trainPath), conf)) {
+            SequenceFile.Reader reader = null;
+            try {
+                reader = new SequenceFile.Reader(fs, new Path(trainPath), conf);
+
                 LongWritable key = new LongWritable();
                 VectorWritable value = new VectorWritable();
                 reader.next(key, value);
                 NamedVector v = (NamedVector) value.get();
                 featureCount = v.size();
+            } finally {
+                if (reader != null) {
+                    reader.close();
+                }
             }
             return featureCount;
         } catch (IOException e) {
@@ -32,5 +39,4 @@ public class SequenceFileDatasetInfo {
             throw e;
         }
     }
-
 }

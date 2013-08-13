@@ -1,12 +1,10 @@
-package com.fujitsu.ca.fic.classifiers.drivers.basic;
+package com.fujitsu.ca.fic.classifiers.drivers;
 
 import java.io.IOException;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.jobcontrol.Job;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
@@ -32,22 +30,22 @@ public class BasicMahoutClassificationDriver extends Configured implements Tool 
     }
 
     @Override
-    public int run(String[] arg0) throws Exception {
+    public int run(String[] arg0) throws IOException {
         LOG.info("Classification of Sieve:Corpus6 with Mahout 0.8 with an online regression algorithm");
         int jobResult = Job.RUNNING;
 
         Configuration conf = getConf();
-        if (conf.get("data.test.path") == null) {
-            loadConfigurationFile(conf);
+        String trainPath = conf.get("data.train.path");
+        String testPath = conf.get("data.test.path");
+        if (trainPath == null | testPath == null) {
+            LOG.error("The configuration file was not loaded correctly! Please check conf file is loaded: \n" + "data.train.path \n"
+                    + "data.test.path \n");
+            throw new IllegalStateException("The expected configuration values for data paths have not been found.");
         }
-
         try {
             MahoutClassifierWrapper mahoutWrapper = new MahoutClassifierWrapper(SYMBOLS);
-            String trainPath = conf.get("data.train.path");
-
             CrossFoldLearner bestLearner = mahoutWrapper.trainBestLearner(conf, trainPath);
 
-            String testPath = conf.get("data.test.path");
             mahoutWrapper.test(conf, testPath, bestLearner);
             mahoutWrapper.showClassificationReport();
 
@@ -61,10 +59,4 @@ public class BasicMahoutClassificationDriver extends Configured implements Tool 
         }
         return jobResult;
     }
-
-    private void loadConfigurationFile(Configuration conf) throws IOException {
-        FileSystem fs = FileSystem.get(conf);
-        conf.addResource(fs.open(new Path("conf/local-conf.xml")));
-    }
-
 }

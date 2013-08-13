@@ -3,8 +3,8 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.fujitsu.ca.fic</groupId>
-	<artifactId>seqclassifier</artifactId>
-	<version>0.1</version>
+	<artifactId>fic-seqclassifier</artifactId>
+	<version>0.5</version>
 	<name>FIC Sequence classifier</name>
 
 	<properties>
@@ -122,52 +122,42 @@
 				<version>2.4</version>
 				<configuration>
 					<encoding>${project.build.sourceEncoding}</encoding>
-					<source>1.7</source>
-					<target>1.7</target>
+					<source>1.6</source>
+					<target>1.6</target>
 					<optimize>true</optimize>
 				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<version>2.4</version>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.15</version>
 				<configuration>
-					<descriptors>
-						<descriptor>src/main/assembly/hadoop-job.xml</descriptor>
-					</descriptors>
-					<!-- <archive> -->
-					<!-- <manifest> -->
-					<!-- <mainClass>com.fujitsu.ca.fic.classifiers.drivers.basic.ConfidentLearningOnKddDriver</mainClass> -->
-					<!-- </manifest> -->
-					<!-- </archive> -->
+					<parallel>methods</parallel>
+					<threadCount>4</threadCount>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>2.1</version>
 				<executions>
 					<execution>
-						<id>make-assembly</id>
 						<phase>package</phase>
 						<goals>
-							<goal>single</goal>
+							<goal>shade</goal>
 						</goals>
+						<configuration>
+							<minimizeJar>true</minimizeJar>							
+							<transformers>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<mainClass>com.fujitsu.ca.fic.classifiers.drivers.BasicMahoutClassificationDriver</mainClass>
+								</transformer>
+							</transformers>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
-			<!-- <plugin> -->
-			<!-- <groupId>org.apache.maven.plugins</groupId> -->
-			<!-- <artifactId>maven-shade-plugin</artifactId> -->
-			<!-- <version>2.1</version> -->
-			<!-- <executions> -->
-			<!-- <execution> -->
-			<!-- <phase>package</phase> -->
-			<!-- <goals> -->
-			<!-- <goal>shade</goal> -->
-			<!-- </goals> -->
-			<!-- </execution> -->
-			<!-- </executions> -->
-			<!-- <configuration> -->
-			<!-- <minimizeJar>true</minimizeJar> -->
-			<!-- <finalName>uber-${project.name}-${project.version}</finalName> -->
-			<!-- </configuration> -->
-			<!-- </plugin> -->
 		</plugins>
 	</build>
 

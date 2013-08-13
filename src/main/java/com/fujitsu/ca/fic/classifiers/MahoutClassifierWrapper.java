@@ -85,12 +85,18 @@ public class MahoutClassifierWrapper {
     public CrossFoldLearner trainBestLearner(Configuration conf, String trainPath) throws IOException {
         AdaptiveLogisticRegression onlineLearner = new AdaptiveLogisticRegression(symbols.size(), SequenceFileDatasetInfo.getFeatureCount(
                 conf, trainPath), new L1());
-        try (SequenceFile.Reader reader = new SequenceFile.Reader(FileSystem.get(conf), new Path(trainPath), conf)) {
+        SequenceFile.Reader reader = null;
+        try {
+            reader = new SequenceFile.Reader(FileSystem.get(conf), new Path(trainPath), conf);
             LongWritable key = new LongWritable();
             VectorWritable value = new VectorWritable();
             while (reader.next(key, value)) {
                 NamedVector nextExample = (NamedVector) value.get();
                 onlineLearner.train(Integer.parseInt(nextExample.getName()), nextExample);
+            }
+        } finally {
+            if (reader != null) {
+                reader.close();
             }
         }
         onlineLearner.close();
@@ -104,8 +110,10 @@ public class MahoutClassifierWrapper {
         ResultAnalyzer analyzer = new ResultAnalyzer(symbols, defaultValue);
         ConfusionMatrix cm = new ConfusionMatrix(symbols, defaultValue);
         OnlineAuc auc = new GlobalOnlineAuc();
+        SequenceFile.Reader reader = null;
+        try {
+            reader = new SequenceFile.Reader(FileSystem.get(conf), new Path(testDirName), conf);
 
-        try (SequenceFile.Reader reader = new SequenceFile.Reader(FileSystem.get(conf), new Path(testDirName), conf)) {
             LongWritable key = new LongWritable();
             VectorWritable value = new VectorWritable();
             while (reader.next(key, value)) {
@@ -133,6 +141,10 @@ public class MahoutClassifierWrapper {
 
             }
             metrics = new ClassificationMetrics(cm, auc);
+        } finally {
+            if (reader != null) {
+                reader.close();
+            }
         }
 
         LOG.info("Testing complete!");
