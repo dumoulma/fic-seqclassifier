@@ -37,6 +37,9 @@ public class BasicMahoutClassificationDriver extends Configured implements Tool 
         Configuration conf = getConf();
         String trainPath = conf.get("data.train.path");
         String testPath = conf.get("data.test.path");
+        // String trainPath = "data/out/sieve/bns/spam-vs-rel/train-seq";
+        // String testPath = "data/out/sieve/bns/spam-vs-rel/test-seq";
+
         if (trainPath == null | testPath == null) {
             LOG.error("The configuration file was not loaded correctly! Please check conf file is loaded: \n" + "data.train.path \n"
                     + "data.test.path \n");

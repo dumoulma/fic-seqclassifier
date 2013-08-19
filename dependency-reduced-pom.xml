@@ -3,8 +3,9 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.fujitsu.ca.fic</groupId>
   <artifactId>fic-seqclassifier</artifactId>
-  <name>FIC Sequence classifier</name>
+  <name>FIC Mahout Sequence Classifier</name>
   <version>0.5</version>
+  <description>Classify data that can classify data that has been previously converted to Vector Space  as Mahout.Math.NamedVectors and saved in the hadoop-friendly SequenceFile format.</description>
   <prerequisites>
     <maven>2.2.1</maven>
   </prerequisites>

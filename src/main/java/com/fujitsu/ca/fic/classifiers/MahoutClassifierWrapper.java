@@ -6,8 +6,8 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.SequenceFile;
+import org.apache.hadoop.io.Text;
 import org.apache.mahout.classifier.AbstractVectorClassifier;
 import org.apache.mahout.classifier.ClassifierResult;
 import org.apache.mahout.classifier.ConfusionMatrix;
@@ -59,7 +59,15 @@ public class MahoutClassifierWrapper {
         LOG.info("Training OnlineLearner using dynamic dataloader");
         try {
             for (NamedVector nextExample : vectorIterable) {
-                onlineLearner.train(Integer.parseInt(nextExample.getName()), nextExample);
+                String docLabel = nextExample.getName();
+                String labelIndex = null;
+                try {
+                    labelIndex = docLabel.split(",")[1];
+                } catch (NumberFormatException nfe) {
+                    LOG.warn("Couldn't parse label of this document: " + docLabel);
+                    continue;
+                }
+                onlineLearner.train(Integer.parseInt(labelIndex), nextExample);
             }
         } finally {
             onlineLearner.close();
@@ -72,7 +80,15 @@ public class MahoutClassifierWrapper {
         try {
             int nRead = 0;
             for (NamedVector nextExample : vectorIterable) {
-                onlineLearner.train(Integer.parseInt(nextExample.getName()), nextExample);
+                String docLabel = nextExample.getName();
+                String labelIndex = null;
+                try {
+                    labelIndex = docLabel.split(",")[1];
+                } catch (NumberFormatException nfe) {
+                    LOG.warn("Couldn't parse label of this document: " + docLabel);
+                    continue;
+                }
+                onlineLearner.train(Integer.parseInt(labelIndex), nextExample);
                 if (nRead++ == trainSetSizeLimit)
                     break;
             }
@@ -87,12 +103,20 @@ public class MahoutClassifierWrapper {
                 conf, trainPath), new L1());
         SequenceFile.Reader reader = null;
         try {
-            reader = new SequenceFile.Reader(FileSystem.get(conf), new Path(trainPath), conf);
-            LongWritable key = new LongWritable();
+            reader = new SequenceFile.Reader(FileSystem.get(conf), new Path(trainPath + "/part-r-00000"), conf);
+            Text key = new Text();
             VectorWritable value = new VectorWritable();
             while (reader.next(key, value)) {
                 NamedVector nextExample = (NamedVector) value.get();
-                onlineLearner.train(Integer.parseInt(nextExample.getName()), nextExample);
+                String label = nextExample.getName();
+                int labelValue = -1;
+                try {
+                    labelValue = Integer.parseInt(label);
+                } catch (NumberFormatException nfe) {
+                    LOG.warn("Couldn't parse label of this document: " + key.toString());
+                    continue;
+                }
+                onlineLearner.train(labelValue, nextExample);
             }
         } finally {
             if (reader != null) {
@@ -112,9 +136,9 @@ public class MahoutClassifierWrapper {
         OnlineAuc auc = new GlobalOnlineAuc();
         SequenceFile.Reader reader = null;
         try {
-            reader = new SequenceFile.Reader(FileSystem.get(conf), new Path(testDirName), conf);
+            reader = new SequenceFile.Reader(FileSystem.get(conf), new Path(testDirName + "/part-r-00000"), conf);
 
-            LongWritable key = new LongWritable();
+            Text key = new Text();
             VectorWritable value = new VectorWritable();
             while (reader.next(key, value)) {
                 NamedVector nextExample = (NamedVector) value.get();

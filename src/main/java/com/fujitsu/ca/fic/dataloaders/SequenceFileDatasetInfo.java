@@ -5,8 +5,8 @@ import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.SequenceFile;
+import org.apache.hadoop.io.Text;
 import org.apache.mahout.math.NamedVector;
 import org.apache.mahout.math.VectorWritable;
 import org.slf4j.Logger;
@@ -21,9 +21,9 @@ public class SequenceFileDatasetInfo {
             FileSystem fs = FileSystem.get(conf);
             SequenceFile.Reader reader = null;
             try {
-                reader = new SequenceFile.Reader(fs, new Path(trainPath), conf);
+                reader = new SequenceFile.Reader(fs, new Path(trainPath + "/part-r-00000"), conf);
 
-                LongWritable key = new LongWritable();
+                Text key = new Text();
                 VectorWritable value = new VectorWritable();
                 reader.next(key, value);
                 NamedVector v = (NamedVector) value.get();

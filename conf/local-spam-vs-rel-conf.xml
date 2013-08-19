@@ -19,10 +19,10 @@
 	</property>
 	<property>
 		<name>data.train.path</name>
-		<value>data/out/bns-seq/train/bns-corpus.seq</value>
+		<value>data/out/sieve/bns/spam-vs-rel/train-seq/</value>
 	</property>
 	<property>
 		<name>data.test.path</name>
-		<value>data/out/bns-seq/test/bns-corpus.seq</value>
+		<value>data/out/sieve/bns/spam-vs-rel/test-seq/</value>
 	</property>
 </configuration>
