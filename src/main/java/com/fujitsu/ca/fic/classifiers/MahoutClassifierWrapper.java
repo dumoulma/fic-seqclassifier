@@ -28,8 +28,9 @@ import org.slf4j.LoggerFactory;
 import com.fujitsu.ca.fic.classifiers.metrics.ClassificationMetrics;
 import com.fujitsu.ca.fic.dataloaders.SequenceFileDatasetInfo;
 
+// NOTE: fan-out is too large, but this is just a convenience class.
 public class MahoutClassifierWrapper {
-    private static final Logger LOG = LoggerFactory.getLogger(MahoutClassifierWrapper.class);
+    private static Logger log = LoggerFactory.getLogger(MahoutClassifierWrapper.class);
 
     private final int categories;
     private final List<String> symbols;
@@ -42,7 +43,7 @@ public class MahoutClassifierWrapper {
     }
 
     public void train(OnlineLearner onlineLearner, List<NamedVector> trainset) {
-        LOG.info("Training OnlineLearner using list of vectors");
+        log.info("Training OnlineLearner using list of vectors");
         try {
             for (NamedVector example : trainset) {
                 String labelName = example.getName();
@@ -52,11 +53,11 @@ public class MahoutClassifierWrapper {
         } finally {
             onlineLearner.close();
         }
-        LOG.info("Training complete!");
+        log.info("Training complete!");
     }
 
     public void train(OnlineLearner onlineLearner, Iterable<NamedVector> vectorIterable) {
-        LOG.info("Training OnlineLearner using dynamic dataloader");
+        log.info("Training OnlineLearner using dynamic dataloader");
         try {
             for (NamedVector nextExample : vectorIterable) {
                 String docLabel = nextExample.getName();
@@ -64,7 +65,7 @@ public class MahoutClassifierWrapper {
                 try {
                     labelIndex = docLabel.split(",")[1];
                 } catch (NumberFormatException nfe) {
-                    LOG.warn("Couldn't parse label of this document: " + docLabel);
+                    log.warn("Couldn't parse label of this document: " + docLabel);
                     continue;
                 }
                 onlineLearner.train(Integer.parseInt(labelIndex), nextExample);
@@ -72,11 +73,11 @@ public class MahoutClassifierWrapper {
         } finally {
             onlineLearner.close();
         }
-        LOG.info("Training complete!");
+        log.info("Training complete!");
     }
 
     public void train(OnlineLearner onlineLearner, Iterable<NamedVector> vectorIterable, int trainSetSizeLimit) {
-        LOG.info("Training OnlineLearner using dynamic dataloader with max examples=" + trainSetSizeLimit);
+        log.info("Training OnlineLearner using dynamic dataloader with max examples=" + trainSetSizeLimit);
         try {
             int nRead = 0;
             for (NamedVector nextExample : vectorIterable) {
@@ -85,17 +86,18 @@ public class MahoutClassifierWrapper {
                 try {
                     labelIndex = docLabel.split(",")[1];
                 } catch (NumberFormatException nfe) {
-                    LOG.warn("Couldn't parse label of this document: " + docLabel);
+                    log.warn("Couldn't parse label of this document: " + docLabel);
                     continue;
                 }
                 onlineLearner.train(Integer.parseInt(labelIndex), nextExample);
-                if (nRead++ == trainSetSizeLimit)
+                if (nRead++ == trainSetSizeLimit) {
                     break;
+                }
             }
         } finally {
             onlineLearner.close();
         }
-        LOG.info("Training complete!");
+        log.info("Training complete!");
     }
 
     public CrossFoldLearner trainBestLearner(Configuration conf, String trainPath) throws IOException {
@@ -113,7 +115,7 @@ public class MahoutClassifierWrapper {
                 try {
                     labelValue = Integer.parseInt(label);
                 } catch (NumberFormatException nfe) {
-                    LOG.warn("Couldn't parse label of this document: " + key.toString());
+                    log.warn("Couldn't parse label of this document: " + key.toString());
                     continue;
                 }
                 onlineLearner.train(labelValue, nextExample);
@@ -129,7 +131,7 @@ public class MahoutClassifierWrapper {
     }
 
     public void test(Configuration conf, String testDirName, AbstractVectorClassifier classifier) throws IOException {
-        LOG.info("Training classifier with test data using dynamic loader");
+        log.info("Training classifier with test data using dynamic loader");
 
         ResultAnalyzer analyzer = new ResultAnalyzer(symbols, defaultValue);
         ConfusionMatrix cm = new ConfusionMatrix(symbols, defaultValue);
@@ -171,12 +173,12 @@ public class MahoutClassifierWrapper {
             }
         }
 
-        LOG.info("Testing complete!");
+        log.info("Testing complete!");
     }
 
     public void showClassificationReport() {
         if (metrics == null) {
-            LOG.warn("Can't show classification report on untrained learner. Please train learner first!");
+            log.warn("Can't show classification report on untrained learner. Please train learner first!");
             throw new RuntimeException("Must do test() before showClassificationReport()");
         }
 

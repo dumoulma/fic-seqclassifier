@@ -12,8 +12,11 @@ import org.apache.mahout.math.VectorWritable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SequenceFileDatasetInfo {
-    private static final Logger LOG = LoggerFactory.getLogger(SequenceFileDatasetInfo.class);
+public final class SequenceFileDatasetInfo {
+    private static Logger log = LoggerFactory.getLogger(SequenceFileDatasetInfo.class);
+
+    private SequenceFileDatasetInfo() {
+    }
 
     public static int getFeatureCount(Configuration conf, String trainPath) throws IOException {
         try {
@@ -35,7 +38,7 @@ public class SequenceFileDatasetInfo {
             }
             return featureCount;
         } catch (IOException e) {
-            LOG.error("Could not get the number of features from the provided sequence file. Please check path.");
+            log.error("Could not get the number of features from the provided sequence file. Please check path.");
             throw e;
         }
     }

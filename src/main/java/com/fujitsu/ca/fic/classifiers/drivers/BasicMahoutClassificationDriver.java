@@ -20,9 +20,9 @@ import com.google.common.collect.Lists;
  * metrics of classification results on the console
  */
 public class BasicMahoutClassificationDriver extends Configured implements Tool {
-    private static final Logger LOG = LoggerFactory.getLogger(BasicMahoutClassificationDriver.class);
+    private static Logger log = LoggerFactory.getLogger(BasicMahoutClassificationDriver.class);
 
-    private static List<String> SYMBOLS = Lists.newArrayList("0", "1");
+    private static List<String> symbols = Lists.newArrayList("0", "1");
 
     public static void main(String[] args) throws Exception {
         int exitCode = ToolRunner.run(new BasicMahoutClassificationDriver(), args);
@@ -31,7 +31,7 @@ public class BasicMahoutClassificationDriver extends Configured implements Tool 
 
     @Override
     public int run(String[] arg0) throws IOException {
-        LOG.info("Classification of Sieve:Corpus6 with Mahout 0.8 with an online regression algorithm");
+        log.info("Classification of Sieve:Corpus6 with Mahout 0.8 with an online regression algorithm");
         int jobResult = Job.RUNNING;
 
         Configuration conf = getConf();
@@ -41,12 +41,12 @@ public class BasicMahoutClassificationDriver extends Configured implements Tool 
         // String testPath = "data/out/sieve/bns/spam-vs-rel/test-seq";
 
         if (trainPath == null | testPath == null) {
-            LOG.error("The configuration file was not loaded correctly! Please check conf file is loaded: \n" + "data.train.path \n"
+            log.error("The configuration file was not loaded correctly! Please check conf file is loaded: \n" + "data.train.path \n"
                     + "data.test.path \n");
             throw new IllegalStateException("The expected configuration values for data paths have not been found.");
         }
         try {
-            MahoutClassifierWrapper mahoutWrapper = new MahoutClassifierWrapper(SYMBOLS);
+            MahoutClassifierWrapper mahoutWrapper = new MahoutClassifierWrapper(symbols);
             CrossFoldLearner bestLearner = mahoutWrapper.trainBestLearner(conf, trainPath);
 
             mahoutWrapper.test(conf, testPath, bestLearner);
@@ -57,7 +57,7 @@ public class BasicMahoutClassificationDriver extends Configured implements Tool 
 
             jobResult = Job.SUCCESS;
         } catch (IOException e) {
-            LOG.error(e.toString());
+            log.error(e.toString());
             jobResult = Job.FAILED;
         }
         return jobResult;
